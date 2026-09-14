@@ -223,11 +223,18 @@ export default function App() {
           const otherFlag = isLeft ? rightLang?.flag : leftLang?.flag;
 
           return (
+            // <View
+            //   key={msg.id}
+            //   style={[
+            //     styles.messageWrapper,
+            //     isLeft ? styles.leftMessage : styles.rightMessage,
+            //   ]}
+            // >
             <View
               key={msg.id}
               style={[
-                styles.messageWrapper,
-                isLeft ? styles.leftMessage : styles.rightMessage,
+                styles.messageRow,
+                isLeft ? styles.messageRowLeft : styles.messageRowRight,
               ]}
             >
               <View style={styles.messageBubble}>
@@ -350,12 +357,6 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
-  // chatContainer: {
-  //   flex: 1,
-  //   paddingHorizontal: 16,
-  //   paddingTop: 12,
-  //   paddingBottom: 8,
-  // },
   chatContainer: {
     flex: 1,
     paddingHorizontal: 16,
@@ -366,29 +367,29 @@ const styles = StyleSheet.create({
     paddingBottom: 8,  // və ya istədiyin qədər
     flexGrow: 1,
   },
-  messageWrapper: {
-    // marginBottom: 12,
-    // maxWidth: '95%',
+  // messageWrapper: {
+  //   marginBottom: 12,
+  //   maxWidth: '85%',  // 95% çox böyükdür, 80-85% daha yaxşıdır
+  //   flexShrink: 1,     // ✅ Bu vacibdir - mətn uzun olsa da kiçilir
+  // },
+  // leftMessage: {
+  //   alignSelf: 'flex-start',
+  // },
+  // rightMessage: {
+  //   alignSelf: 'flex-end',
+  // },
+  messageRow: {
+    width: '100%',
     marginBottom: 12,
-    maxWidth: '85%',  // 95% çox böyükdür, 80-85% daha yaxşıdır
-    flexShrink: 1,     // ✅ Bu vacibdir - mətn uzun olsa da kiçilir
+    flexDirection: 'row',
   },
-  leftMessage: {
-    alignSelf: 'flex-start',
+  messageRowLeft: {
+    justifyContent: 'flex-start',
   },
-  rightMessage: {
-    alignSelf: 'flex-end',
+  messageRowRight: {
+    justifyContent: 'flex-end',
   },
   messageBubble: {
-    // backgroundColor: '#fff',
-    // borderRadius: 12,
-    // padding: 12,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 1 },
-    // shadowOpacity: 0.05,
-    // shadowRadius: 2,
-    // elevation: 1,
-    // minWidth: 120,
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 12,
@@ -397,9 +398,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
-    minWidth: 120,
-    flexShrink: 1,    // ✅ Bu da vacibdir
+    maxWidth: '85%',  // ✅ Burada maxWidth
+    flexShrink: 1,
   },
+  // messageBubble: {
+  //   backgroundColor: '#fff',
+  //   borderRadius: 12,
+  //   padding: 12,
+  //   shadowColor: '#000',
+  //   shadowOffset: { width: 0, height: 1 },
+  //   shadowOpacity: 0.05,
+  //   shadowRadius: 2,
+  //   elevation: 1,
+  //   minWidth: 120,
+  //   flexShrink: 1,    // ✅ Bu da vacibdir
+  // },
   messageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
