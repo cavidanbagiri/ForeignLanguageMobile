@@ -40,7 +40,10 @@ export default function App() {
   const [rightLanguage, setRightLanguage] = useState('en');
 
   // Mesajlar
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    // { id: 1, text: 'Merhaba', language: 'tr', translated: 'Hello' },
+    // { id: 2, text: 'How are you?', language: 'en', translated: 'Nasılsın?' },
+  ]);
 
   const scrollViewRef = useRef();
 
@@ -48,27 +51,9 @@ export default function App() {
   const [recordingSide, setRecordingSide] = useState(null); // 'left' | 'right' | null
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // expo-audio: tək bir recorder instansı, vəziyyəti hook izləyir.
-  // isMeteringEnabled: true - danışıq olub-olmadığını yoxlamaq üçün səs
-  // səviyyəsini (dB) oxumağa imkan verir.
-  const audioRecorder = useAudioRecorder({
-    ...RecordingPresets.HIGH_QUALITY,
-    isMeteringEnabled: true,
-  });
-  const recorderState = useAudioRecorderState(audioRecorder, 100); // hər 100ms yenilə
-
-  // Qeyd zamanı ən yüksək səs səviyyəsini izləyirik ki, sakit/boş
-  // qeydləri backend-ə göndərməyək (Gemini-nin halüsinasiyasının qarşısını alır)
-  // null = hələ heç bir real metering dəyəri gəlməyib (cihaz dəstəkləmə bilər)
-  const maxMeteringRef = useRef(null);
-
-  useEffect(() => {
-    if (recorderState.isRecording && typeof recorderState.metering === 'number') {
-      if (maxMeteringRef.current === null || recorderState.metering > maxMeteringRef.current) {
-        maxMeteringRef.current = recorderState.metering;
-      }
-    }
-  }, [recorderState.metering, recorderState.isRecording]);
+  // expo-audio: tək bir recorder instansı, vəziyyəti hook izləyir
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(audioRecorder);
 
   // Seçilmiş dilləri tap
   const leftLang = languages.find((l) => l.code === leftLanguage);
@@ -118,12 +103,6 @@ export default function App() {
         }
       );
 
-      if (uploadResult.status === 422) {
-        // Backend "nitq tapılmadı" dedi - bu real xəta deyil, sadəcə xəbərdarlıq
-        Alert.alert('Xəbərdarlıq', 'Səsdə heç bir nitq aşkarlanmadı. Yenidən cəhd edin.');
-        return;
-      }
-
       if (uploadResult.status < 200 || uploadResult.status >= 300) {
         const errorBody = JSON.parse(uploadResult.body || '{}');
         throw new Error(errorBody.detail || `Server xətası: ${uploadResult.status}`);
@@ -158,42 +137,17 @@ export default function App() {
     }
   };
 
-  // Bu həddən qısa qeydlər (yanlış toxunma) göndərilmir
-  const MIN_DURATION_MS = 600;
-  // Bu həddən sakit qeydlər (danışıq yoxdur, sadəcə fon səsi) göndərilmir.
-  // dB miqyası ~-160 (tam sükut) ilə 0 (ən yüksək) arasındadır.
-  // Çox həssasdırsa (danışığı da kəsirsə) rəqəmi azalt (məs. -55),
-  // çox səs buraxırsa artır (məs. -35).
-  const MIN_METERING_DB = -45;
-
   // Qeydi dayandır və backend-ə göndər
   const stopRecording = async () => {
     const side = recordingSide;
-    const durationMillis = recorderState.durationMillis;
-    const maxMetering = maxMeteringRef.current;
-
     setRecordingSide(null);
 
     try {
       await audioRecorder.stop();
       const uri = audioRecorder.uri;
-
-      const tooShort = durationMillis < MIN_DURATION_MS;
-      // Yalnız cihaz həqiqətən metering dəyəri veribsə yoxlayırıq.
-      // maxMetering === null olarsa (bəzi cihazlarda/formatlarda dəstəklənmir),
-      // bu yoxlamanı keçirik - əks halda hər qeyd səhvən bloklanır.
-      const tooQuiet = maxMetering !== null && maxMetering < MIN_METERING_DB;
-
-      if (!uri || tooShort || tooQuiet) {
-        console.log('Qeyd ötürülmədi:', { durationMillis, maxMetering, tooShort, tooQuiet });
-        if (!tooShort) {
-          // Sadəcə çox qısa toxunma deyilsə (yanlışlıqla basma), istifadəçiyə bildir
-          Alert.alert('Səs tapılmadı', 'Heç bir danışıq eşidilmədi. Yenidən cəhd edin.');
-        }
-        return;
+      if (uri) {
+        await sendAudioToBackend(uri, side);
       }
-
-      await sendAudioToBackend(uri, side);
     } catch (error) {
       console.error('Qeydi dayandırma xətası:', error);
       Alert.alert('Xəta', 'Səs qeydi emal edilə bilmədi.');
@@ -215,7 +169,6 @@ export default function App() {
         }
       }
 
-      maxMeteringRef.current = null;
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
       setRecordingSide(side);
@@ -259,6 +212,7 @@ export default function App() {
       {/* Mesajlar (Söhbət Sahəsi) */}
       <ScrollView
         style={styles.chatContainer}
+        contentContainerStyle={styles.chatContentContainer}
         ref={scrollViewRef}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd()}
       >
@@ -269,11 +223,18 @@ export default function App() {
           const otherFlag = isLeft ? rightLang?.flag : leftLang?.flag;
 
           return (
+            // <View
+            //   key={msg.id}
+            //   style={[
+            //     styles.messageWrapper,
+            //     isLeft ? styles.leftMessage : styles.rightMessage,
+            //   ]}
+            // >
             <View
               key={msg.id}
               style={[
-                styles.messageWrapper,
-                isLeft ? styles.leftMessage : styles.rightMessage,
+                styles.messageRow,
+                isLeft ? styles.messageRowLeft : styles.messageRowRight,
               ]}
             >
               <View style={styles.messageBubble}>
@@ -402,15 +363,31 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
-  messageWrapper: {
+  chatContentContainer: {
+    paddingBottom: 8,  // və ya istədiyin qədər
+    flexGrow: 1,
+  },
+  // messageWrapper: {
+  //   marginBottom: 12,
+  //   maxWidth: '85%',  // 95% çox böyükdür, 80-85% daha yaxşıdır
+  //   flexShrink: 1,     // ✅ Bu vacibdir - mətn uzun olsa da kiçilir
+  // },
+  // leftMessage: {
+  //   alignSelf: 'flex-start',
+  // },
+  // rightMessage: {
+  //   alignSelf: 'flex-end',
+  // },
+  messageRow: {
+    width: '100%',
     marginBottom: 12,
-    maxWidth: '85%',
+    flexDirection: 'row',
   },
-  leftMessage: {
-    alignSelf: 'flex-start',
+  messageRowLeft: {
+    justifyContent: 'flex-start',
   },
-  rightMessage: {
-    alignSelf: 'flex-end',
+  messageRowRight: {
+    justifyContent: 'flex-end',
   },
   messageBubble: {
     backgroundColor: '#fff',
@@ -421,8 +398,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
-    minWidth: 120,
+    maxWidth: '85%',  // ✅ Burada maxWidth
+    flexShrink: 1,
   },
+  // messageBubble: {
+  //   backgroundColor: '#fff',
+  //   borderRadius: 12,
+  //   padding: 12,
+  //   shadowColor: '#000',
+  //   shadowOffset: { width: 0, height: 1 },
+  //   shadowOpacity: 0.05,
+  //   shadowRadius: 2,
+  //   elevation: 1,
+  //   minWidth: 120,
+  //   flexShrink: 1,    // ✅ Bu da vacibdir
+  // },
   messageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
