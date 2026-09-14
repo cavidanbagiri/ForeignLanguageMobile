@@ -40,7 +40,8 @@ export default function App() {
   const [rightLanguage, setRightLanguage] = useState('en');
 
   // Mesajlar
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+  ]);
 
   const scrollViewRef = useRef();
 
@@ -259,6 +260,7 @@ export default function App() {
       {/* Mesajlar (Söhbət Sahəsi) */}
       <ScrollView
         style={styles.chatContainer}
+        contentContainerStyle={styles.chatContentContainer}
         ref={scrollViewRef}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd()}
       >
@@ -400,11 +402,15 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 8,
+  },
+  chatContentContainer: {
+    paddingBottom: 12,
+    flexGrow: 1,
   },
   messageWrapper: {
     marginBottom: 12,
     maxWidth: '85%',
+    flexShrink: 1,
   },
   leftMessage: {
     alignSelf: 'flex-start',
@@ -431,17 +437,20 @@ const styles = StyleSheet.create({
   flagText: {
     fontSize: 18,
     marginRight: 6,
+    flexShrink: 0,
   },
   langName: {
     fontSize: 12,
     color: '#666',
     fontWeight: '500',
+    flexShrink: 1,
   },
   originalText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
     marginVertical: 4,
+    flexShrink: 1,
   },
   dividerLine: {
     height: 1,
@@ -450,16 +459,18 @@ const styles = StyleSheet.create({
   },
   translatedContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   translatedFlag: {
     fontSize: 16,
     marginRight: 6,
+    flexShrink: 0,
   },
   translatedText: {
     fontSize: 15,
     color: '#007AFF',
     fontWeight: '500',
+    flexShrink: 1,
   },
   processingWrapper: {
     flexDirection: 'row',
