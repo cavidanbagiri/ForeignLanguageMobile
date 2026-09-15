@@ -81,8 +81,8 @@ export default function App() {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) {
         Alert.alert(
-          'İcazə lazımdır',
-          'Danışmaq üçün mikrofon icazəsi verməlisiniz (Tənzimləmələr > Tətbiq > Mikrofon).'
+          'Permission Required',
+          'Microphone access is needed to speak.'
         );
       }
 
@@ -121,7 +121,7 @@ export default function App() {
 
       if (uploadResult.status === 422) {
         // Backend "nitq tapılmadı" dedi - bu real xəta deyil, sadəcə xəbərdarlıq
-        Alert.alert('Xəbərdarlıq', 'Səsdə heç bir nitq aşkarlanmadı. Yenidən cəhd edin.');
+        Alert.alert('Warning', "We couldn't detect any speech. Please try again.");
         return;
       }
 
@@ -133,7 +133,7 @@ export default function App() {
       const data = JSON.parse(uploadResult.body);
 
       if (!data.transcript) {
-        Alert.alert('Xəbərdarlıq', 'Səsdə heç bir nitq aşkarlanmadı. Yenidən cəhd edin.');
+        Alert.alert('Warning', "We couldn't detect any speech. Please try again.");
         return;
       }
 
@@ -151,8 +151,8 @@ export default function App() {
     } catch (error) {
       console.error('Backend xətası:', error);
       Alert.alert(
-        'Xəta',
-        'Tərcümə alınmadı. Backend-in işlədiyini və eyni Wi-Fi-da olduğunuzu yoxlayın.'
+        'Error',
+        'Translation failed. Please check your connection and try again.'
       );
     } finally {
       setIsProcessing(false);
@@ -189,7 +189,10 @@ export default function App() {
         console.log('Qeyd ötürülmədi:', { durationMillis, maxMetering, tooShort, tooQuiet });
         if (!tooShort) {
           // Sadəcə çox qısa toxunma deyilsə (yanlışlıqla basma), istifadəçiyə bildir
-          Alert.alert('Səs tapılmadı', 'Heç bir danışıq eşidilmədi. Yenidən cəhd edin.');
+          Alert.alert(
+            'No Speech Detected',
+            "We couldn't hear any speech. Please try again."
+          );
         }
         return;
       }
@@ -209,8 +212,8 @@ export default function App() {
         const requested = await AudioModule.requestRecordingPermissionsAsync();
         if (!requested.granted) {
           Alert.alert(
-            'İcazə lazımdır',
-            'Danışmaq üçün mikrofon icazəsi verməlisiniz (Tənzimləmələr > Tətbiq > Mikrofon).'
+            'Permission Required',
+            'You need to grant microphone permission to speak (Settings > App > Microphone).'
           );
           return;
         }
@@ -221,9 +224,9 @@ export default function App() {
       audioRecorder.record();
       setRecordingSide(side);
     } catch (error) {
-      console.error('Mikrofon xətası:', error);
+      console.error('Microphone error.', error);
       setRecordingSide(null);
-      Alert.alert('Xəta', 'Mikrofon açılmadı. Zəhmət olmasa icazəni yoxlayın.');
+      Alert.alert('Error', "The microphone didn't turn on. Please check your microphone permissions.");
     }
   };
 
@@ -356,7 +359,7 @@ export default function App() {
               color="#fff"
             />
             <Text style={styles.micText}>
-              {recordingSide === 'right' ? 'Dayandır' : 'Danış'}
+              {recordingSide === 'right' ? 'Stop' : 'Speak'}
             </Text>
           </TouchableOpacity>
 
