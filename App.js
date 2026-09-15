@@ -253,8 +253,8 @@ export default function App() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>🌍 Foreign Talker</Text>
-        <Text style={styles.subtitle}>Səsli Tərcümə</Text>
+        <Text style={styles.title}>🌍 Talgo</Text>
+        {/* <Text style={styles.subtitle}>Səsli Tərcümə</Text> */}
       </View>
 
       {/* Mesajlar (Söhbət Sahəsi) */}
