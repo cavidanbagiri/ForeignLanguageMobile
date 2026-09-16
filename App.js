@@ -256,7 +256,7 @@ export default function App() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>🌍 Talgo</Text>
+        <Text style={styles.title}>🌍 Talqo</Text>
         {/* <Text style={styles.subtitle}>Səsli Tərcümə</Text> */}
       </View>
 
