@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.cavidan.talqo",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
