@@ -1,8 +1,3 @@
-
-
-
-
-
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -59,7 +54,7 @@ export default function App() {
   // isMeteringEnabled: true - danışıq olub-olmadığını yoxlamaq üçün səs
   // səviyyəsini (dB) oxumağa imkan verir.
   const audioRecorder = useAudioRecorder({
-    ...RecordingPresets.HIGH_QUALITY,
+    ...RecordingPresets.LOW_QUALITY,
     isMeteringEnabled: true,
   });
   const recorderState = useAudioRecorderState(audioRecorder, 100); // hər 100ms yenilə
@@ -640,12 +635,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
 });
-
-
-
-
-
-
 
 
 
